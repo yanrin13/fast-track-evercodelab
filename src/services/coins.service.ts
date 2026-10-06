@@ -1,6 +1,8 @@
 import axios from "axios";
 import { createCoin, getCoins } from "../repositories/coin.repository.js";
 
+const apiKey = process.env.API_KEY;
+
 // Получение курса одной конкретной монеты
 export async function getBinanceCoin(symbol: string) {
   try {
@@ -12,7 +14,7 @@ export async function getBinanceCoin(symbol: string) {
           convert: "USD",
         },
         headers: {
-          "X-CMC_PRO_API_KEY": "5f9e7857e614446ba7d990bd1ec2dc55",
+          "X-CMC_PRO_API_KEY": apiKey,
         },
         timeout: 5000,
       },
@@ -32,7 +34,7 @@ export async function getBinanceCoins() {
       "https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest",
       {
         headers: {
-          "X-CMC_PRO_API_KEY": "5f9e7857e614446ba7d990bd1ec2dc55",
+          "X-CMC_PRO_API_KEY": apiKey,
         },
         timeout: 5000,
       },

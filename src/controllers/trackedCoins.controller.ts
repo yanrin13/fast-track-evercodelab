@@ -16,7 +16,9 @@ export async function getTrackedCoins(req: Request, res: Response) {
 
     const data = await getTrackedList(userId);
 
-    return res.json(data);
+    return res.status(200).json({
+      data,
+    });
   } catch (error) {
     console.error(error);
 
@@ -40,7 +42,9 @@ export async function addTrackedCoin(req: Request, res: Response) {
 
     const data = await addCoin(userId, coinSymbol);
 
-    return res.status(201).json(data);
+    return res.status(201).json({
+      success: true,
+    });
   } catch (error) {
     console.error(error);
 
@@ -72,7 +76,9 @@ export async function updateTrackedCoin(req: Request, res: Response) {
 
     const data = await updateCoin(userId, oldSymbol, newSymbol);
 
-    return res.json(data);
+    return res.status(200).json({
+      success: true,
+    });
   } catch (error) {
     console.error(error);
 
@@ -96,7 +102,9 @@ export async function deleteTrackedCoin(req: Request, res: Response) {
 
     const data = await deleteCoin(userId, coinSymbol);
 
-    return res.json(data);
+    return res.status(200).json({
+      success: true,
+    });
   } catch (error) {
     console.error(error);
 

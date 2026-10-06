@@ -23,7 +23,7 @@ export async function getCoinPrice(req: Request, res: Response) {
     console.error(error);
 
     res.status(502).json({
-      error: "Failed to get data from Binance",
+      error: "Failed to get data from CoinMarketCap API",
     });
   }
 }
@@ -38,7 +38,7 @@ export async function getCoinsPrice(req: Request, res: Response) {
     console.error(error);
 
     res.status(502).json({
-      error: "Failed to get data from Binance",
+      error: "Failed to get data from CoinMarketCap API",
     });
   }
 }
@@ -54,7 +54,7 @@ export async function getCoins(req: Request, res: Response) {
     console.error(error);
 
     res.status(502).json({
-      error: "Failed to get data from data base",
+      error: "Failed to get data from database",
     });
   }
 }

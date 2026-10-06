@@ -33,11 +33,11 @@ export async function updatePrices() {
 
       await createPriceHistory(coin.symbol, price);
 
-      await sleep(1000);
+      await sleep(3000);
     } catch (error) {
       console.error(`Failed to update ${coin.symbol}:`, error);
 
-      await sleep(1000);
+      await sleep(3000);
     }
   }
 }

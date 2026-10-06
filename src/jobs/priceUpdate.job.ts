@@ -11,7 +11,7 @@ export async function startPriceUpdateJob() {
     } catch (error) {
       console.error("Price update failed:", error);
     }
-  }, 10_000);
+  }, 400_000);
 }
 
 export function stopPriceUpdateJob() {

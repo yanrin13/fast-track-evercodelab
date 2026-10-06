@@ -2,7 +2,7 @@ import request from "supertest";
 import app from "../src/app.js";
 
 const VALID_TOKEN =
-  "3f799ce7020f90bea6b2f966d711bd0ee2419c4e7481032b280d48a2fa1c3a3f";
+  "72389951a208b807e88a0f941f7d355a375de4cdb587a35ea2270b4d1dfcf242";
 const AUTH = { Authorization: `Bearer ${VALID_TOKEN}` };
 
 describe("Tracked Coins Routes", () => {
