@@ -27,6 +27,8 @@ app.listen(port, () => {
 setupShutdown();
 
 await startCoinSync();
-await startPriceUpdateJob();
+if (process.env.NODE_ENV !== "test") {
+  startPriceUpdateJob();
+}
 
 export default app;

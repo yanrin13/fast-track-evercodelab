@@ -17,30 +17,49 @@ function sleep(ms: number) {
 
 export async function updatePrices() {
   const coins = (await getCoins()) as Coin[];
+  const BATCH_SIZE = 50;
+  let successCount = 0;
+  let failCount = 0;
 
-  for (const coin of coins) {
+  console.log(`[Prices] Starting update for ${coins.length} coins`);
+
+  for (let i = 0; i < coins.length; i += BATCH_SIZE) {
+    const batch = coins.slice(i, i + BATCH_SIZE);
+    const symbols = batch.map((c) => c.symbol).join(",");
+
     try {
-      const data = await getBinanceCoin(coin.symbol);
+      const data = await getBinanceCoin(symbols);
 
-      const price = data.data[coin.symbol]?.[0]?.quote?.USD?.price;
+      for (const coin of batch) {
+        const price = data.data[coin.symbol]?.[0]?.quote?.USD?.price;
 
-      console.log(coin.symbol, price);
-
-      if (typeof price !== "number") {
-        console.error(`Price not found for ${coin.symbol}`);
-        continue;
+        if (typeof price === "number") {
+          await createPriceHistory(coin.symbol, price);
+          successCount++;
+        } else {
+          console.warn(`[Prices] Price not found for ${coin.symbol}`);
+          failCount++;
+        }
       }
 
-      await createPriceHistory(coin.symbol, price);
-
-      await sleep(3000);
+      console.log(
+        `[Prices] Batch done: ${Math.min(i + BATCH_SIZE, coins.length)} / ${coins.length} (${symbols})`,
+      );
     } catch (error) {
-      console.error(`Failed to update ${coin.symbol}:`, error);
+      console.error(`[Prices] Batch failed (symbols: ${symbols}):`, error);
+      failCount += batch.length;
+    }
 
-      await sleep(3000);
+    if (i + BATCH_SIZE < coins.length) {
+      await sleep(1000);
     }
   }
+
+  console.log(
+    `[Prices] Finished. Success: ${successCount}, Failed: ${failCount}`,
+  );
 }
+
 // Получение истории цен по одной монете
 export async function getPrice(coinSymbol: string) {
   return getPriceHistory(coinSymbol);

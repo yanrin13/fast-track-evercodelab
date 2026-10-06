@@ -9,17 +9,11 @@ export async function getBinanceCoin(symbol: string) {
     const response = await axios.get(
       "https://pro-api.coinmarketcap.com/v2/cryptocurrency/quotes/latest",
       {
-        params: {
-          symbol,
-          convert: "USD",
-        },
-        headers: {
-          "X-CMC_PRO_API_KEY": apiKey,
-        },
+        params: { symbol, convert: "USD" },
+        headers: { "X-CMC_PRO_API_KEY": apiKey },
         timeout: 5000,
       },
     );
-
     return response.data;
   } catch (error) {
     console.error("CoinMarketCap API error:", error);
@@ -33,13 +27,10 @@ export async function getBinanceCoins() {
     const response = await axios.get(
       "https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest",
       {
-        headers: {
-          "X-CMC_PRO_API_KEY": apiKey,
-        },
+        headers: { "X-CMC_PRO_API_KEY": apiKey },
         timeout: 5000,
       },
     );
-
     return response.data;
   } catch (error) {
     console.error("CoinMarketCap API error:", error);
@@ -50,12 +41,44 @@ export async function getBinanceCoins() {
 // Добавление монет в базу данных
 export async function syncCoins() {
   const response = await getBinanceCoins();
+  const coins = response.data;
+  const BATCH_SIZE = 50;
+  const DELAY_MS = 0;
+  let successCount = 0;
+  let failCount = 0;
 
-  for (const coin of response.data) {
-    await createCoin(coin.symbol);
+  console.log(`[Coins] Starting sync of ${coins.length} coins`);
+
+  for (let i = 0; i < coins.length; i += BATCH_SIZE) {
+    const batch = coins.slice(i, i + BATCH_SIZE);
+
+    const results = await Promise.allSettled(
+      batch.map((coin: { symbol: string }) => createCoin(coin.symbol)),
+    );
+
+    for (const result of results) {
+      if (result.status === "fulfilled") {
+        successCount++;
+      } else {
+        failCount++;
+        console.error("[Coins] Failed to create coin:", result.reason);
+      }
+    }
+
+    console.log(
+      `[Coins] Processed ${Math.min(i + BATCH_SIZE, coins.length)} / ${coins.length}`,
+    );
+
+    if (i + BATCH_SIZE < coins.length) {
+      await new Promise((resolve) => setTimeout(resolve, DELAY_MS));
+    }
   }
 
-  return response.data.length;
+  console.log(
+    `[Coins] Sync finished. Success: ${successCount}, Failed: ${failCount}`,
+  );
+
+  return coins.length;
 }
 
 // Получение монет из базы данных
