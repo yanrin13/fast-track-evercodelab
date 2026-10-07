@@ -1,18 +1,19 @@
 import type { Request, Response } from "express";
 import { getPrice } from "../services/price.service.js";
+import { parseCoinSymbol } from "../utils/validation.js";
 
 // Получение истории цен на одну конкретную монету
 export async function getCoinHistory(req: Request, res: Response) {
   try {
-    const coinSymbol = req.params.coinSymbol;
+    const coinSymbol = parseCoinSymbol(req.params.coinSymbol);
 
-    if (typeof coinSymbol !== "string") {
+    if (coinSymbol === null) {
       return res.status(400).json({
-        error: "Symbol is required and must be a string",
+        error: "Invalid cryptocurrency symbol",
       });
     }
 
-    const data = await getPrice(coinSymbol);
+    const data = await getPrice(coinSymbol.toUpperCase());
 
     res.json(data);
   } catch (error) {

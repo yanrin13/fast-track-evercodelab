@@ -3,7 +3,7 @@ import {
   createPriceHistory,
   getPriceHistory,
 } from "../repositories/priceHistory.repository.js";
-import { getBinanceCoin } from "./coins.service.js";
+import { getCoinFromApi } from "./coins.service.js";
 
 type Coin = {
   id: number;
@@ -28,7 +28,7 @@ export async function updatePrices() {
     const symbols = batch.map((c) => c.symbol).join(",");
 
     try {
-      const data = await getBinanceCoin(symbols);
+      const data = await getCoinFromApi(symbols);
 
       for (const coin of batch) {
         const price = data.data[coin.symbol]?.[0]?.quote?.USD?.price;

@@ -1,22 +1,23 @@
 import type { Request, Response } from "express";
 import {
-  getBinanceCoin,
-  getBinanceCoins,
+  getCoinFromApi,
+  getCoinsFromApi,
   getAllCoins,
 } from "../services/coins.service.js";
+import { parseCoinSymbol } from "../utils/validation.js";
 
 // Получение курса одной конкретной монеты
 export async function getCoinPrice(req: Request, res: Response) {
   try {
-    const symbol = req.params.symbol;
+    const coinSymbol = parseCoinSymbol(req.params.coinSymbol);
 
-    if (!symbol || typeof symbol !== "string" || !/^[A-Za-z]+$/.test(symbol)) {
+    if (coinSymbol === null) {
       return res.status(400).json({
         error: "Invalid cryptocurrency symbol",
       });
     }
 
-    const data = await getBinanceCoin(symbol.toUpperCase());
+    const data = await getCoinFromApi(coinSymbol.toUpperCase());
 
     res.json(data);
   } catch (error) {
@@ -31,7 +32,7 @@ export async function getCoinPrice(req: Request, res: Response) {
 // Получение курсов всех монет
 export async function getCoinsPrice(req: Request, res: Response) {
   try {
-    const data = await getBinanceCoins();
+    const data = await getCoinsFromApi();
 
     res.json(data);
   } catch (error) {

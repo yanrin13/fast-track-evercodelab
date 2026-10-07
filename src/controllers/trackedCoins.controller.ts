@@ -36,7 +36,7 @@ export async function addTrackedCoin(req: Request, res: Response) {
 
     if (coinSymbol === null) {
       return res.status(400).json({
-        error: "coinSymbol is required and must be a crypto coin name",
+        error: "Invalid cryptocurrency symbol",
       });
     }
 
@@ -44,6 +44,7 @@ export async function addTrackedCoin(req: Request, res: Response) {
 
     return res.status(201).json({
       success: true,
+      data: data,
     });
   } catch (error) {
     console.error(error);
@@ -64,13 +65,13 @@ export async function updateTrackedCoin(req: Request, res: Response) {
 
     if (oldSymbol === null) {
       return res.status(400).json({
-        error: "coinSymbol is required and must be a crypto coin name",
+        error: "Invalid cryptocurrency old symbol",
       });
     }
 
     if (newSymbol === null) {
       return res.status(400).json({
-        error: "newSymbol is required and must be a crypto coin name",
+        error: "Invalid cryptocurrency new symbol",
       });
     }
 
@@ -78,6 +79,7 @@ export async function updateTrackedCoin(req: Request, res: Response) {
 
     return res.status(200).json({
       success: true,
+      data: data,
     });
   } catch (error) {
     console.error(error);
@@ -96,7 +98,7 @@ export async function deleteTrackedCoin(req: Request, res: Response) {
 
     if (coinSymbol === null) {
       return res.status(400).json({
-        error: "coinSymbol is required and must be a crypto coin name",
+        error: "Invalid cryptocurrency symbol",
       });
     }
 
@@ -104,6 +106,7 @@ export async function deleteTrackedCoin(req: Request, res: Response) {
 
     return res.status(200).json({
       success: true,
+      data: data,
     });
   } catch (error) {
     console.error(error);

@@ -168,7 +168,7 @@ router.get("/coins", getCoins); // список монет
 router.get("/coins/list/price", getCoinsPrice); // список монет из coinmarketcap api
 /**
  * @openapi
- * /api/coins/{symbol}/price:
+ * /api/coins/{coinSymbol}/price:
  *   get:
  *     tags:
  *       - Coins
@@ -176,7 +176,7 @@ router.get("/coins/list/price", getCoinsPrice); // список монет из 
  *     description: Получает актуальные данные о криптовалюте по её символу из CoinMarketCap API
  *     parameters:
  *       - in: path
- *         name: symbol
+ *         name: coinSymbol
  *         required: true
  *         description: Символ криптовалюты
  *         schema:
@@ -275,9 +275,9 @@ router.get("/coins/list/price", getCoinsPrice); // список монет из 
  *               properties:
  *                 error:
  *                   type: string
- *                   example: Symbol is required and must be a string
+ *                   example: Invalid cryptocurrency symbol
  *             example:
- *               error: Symbol is required and must be a string
+ *               error: Invalid cryptocurrency symbol
  *
  *       502:
  *         description: Ошибка при получении данных из CoinMarketCap API
@@ -292,6 +292,6 @@ router.get("/coins/list/price", getCoinsPrice); // список монет из 
  *             example:
  *               error: Failed to get data from CoinMarketCap API
  */
-router.get("/coins/:symbol/price", getCoinPrice); // цена по конкретной монете
+router.get("/coins/:coinSymbol/price", getCoinPrice); // цена по конкретной монете
 
 export default router;

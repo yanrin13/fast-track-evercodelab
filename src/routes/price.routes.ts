@@ -76,9 +76,9 @@ const router = Router();
  *               properties:
  *                 error:
  *                   type: string
- *                   example: Symbol is required and must be a string
+ *                   example: Invalid cryptocurrency symbol
  *             example:
- *               error: Symbol is required and must be a string
+ *               error: Invalid cryptocurrency symbol
  *
  *       502:
  *         description: Ошибка при получении данных из базы данных

@@ -4,7 +4,7 @@ import { createCoin, getCoins } from "../repositories/coin.repository.js";
 const apiKey = process.env.API_KEY;
 
 // Получение курса одной конкретной монеты
-export async function getBinanceCoin(symbol: string) {
+export async function getCoinFromApi(symbol: string) {
   try {
     const response = await axios.get(
       "https://pro-api.coinmarketcap.com/v2/cryptocurrency/quotes/latest",
@@ -22,7 +22,7 @@ export async function getBinanceCoin(symbol: string) {
 }
 
 // Получение курсов всех монет
-export async function getBinanceCoins() {
+export async function getCoinsFromApi() {
   try {
     const response = await axios.get(
       "https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest",
@@ -40,7 +40,7 @@ export async function getBinanceCoins() {
 
 // Добавление монет в базу данных
 export async function syncCoins() {
-  const response = await getBinanceCoins();
+  const response = await getCoinsFromApi();
   const coins = response.data;
   const BATCH_SIZE = 50;
   const DELAY_MS = 0;

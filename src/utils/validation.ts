@@ -17,15 +17,25 @@ export function parseUserId(
 export function parseCoinSymbol(
   value: string | string[] | undefined,
 ): string | null {
-  if (!value || typeof value !== "string") {
+  if (typeof value !== "string") {
     return null;
   }
 
-  const symbol = value.trim().toUpperCase();
+  const symbol = value.trim();
 
-  if (!symbol) {
+  if (!isValidCoinSymbol(symbol)) {
     return null;
   }
 
-  return symbol;
+  return symbol.toUpperCase();
+}
+
+export function isValidCoinSymbol(
+  symbol: string | string[] | undefined,
+): symbol is string {
+  return (
+    typeof symbol === "string" &&
+    symbol.length > 0 &&
+    /^[A-Za-z]+$/.test(symbol)
+  );
 }

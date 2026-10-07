@@ -3,18 +3,18 @@ import { jest, describe, it, expect, afterEach } from "@jest/globals";
 import request from "supertest";
 
 jest.unstable_mockModule("../src/services/coins.service.js", () => ({
-  getBinanceCoin: jest.fn(),
-  getBinanceCoins: jest.fn(),
+  getCoinFromApi: jest.fn(),
+  getCoinsFromApi: jest.fn(),
   getAllCoins: jest.fn(),
 }));
 
-const { getBinanceCoin, getBinanceCoins, getAllCoins } =
+const { getCoinFromApi, getCoinsFromApi, getAllCoins } =
   await import("../src/services/coins.service.js");
 
 const { default: app } = await import("../src/app.js");
 
-const mockedGetBinanceCoin = jest.mocked(getBinanceCoin);
-const mockedGetBinanceCoins = jest.mocked(getBinanceCoins);
+const mockedGetCoinFromApi = jest.mocked(getCoinFromApi);
+const mockedGetCoinsFromApi = jest.mocked(getCoinsFromApi);
 const mockedGetAllCoins = jest.mocked(getAllCoins);
 
 describe("Coins routes", () => {
@@ -49,7 +49,7 @@ describe("Coins routes", () => {
 
   describe("GET /api/coins/list/price", () => {
     it("should return prices for all coins", async () => {
-      mockedGetBinanceCoins.mockResolvedValue({
+      mockedGetCoinsFromApi.mockResolvedValue({
         data: [
           {
             symbol: "BTC",
@@ -80,7 +80,7 @@ describe("Coins routes", () => {
     });
 
     it("should return 502 when Binance request fails", async () => {
-      mockedGetBinanceCoins.mockRejectedValue(new Error("Binance API error"));
+      mockedGetCoinsFromApi.mockRejectedValue(new Error("Binance API error"));
 
       const response = await request(app).get("/api/coins/list/price");
 
@@ -93,7 +93,7 @@ describe("Coins routes", () => {
 
   describe("GET /api/coins/:symbol/price", () => {
     it("should return price for a specific coin", async () => {
-      mockedGetBinanceCoin.mockResolvedValue({
+      mockedGetCoinFromApi.mockResolvedValue({
         data: {
           BTC: [
             {
@@ -118,11 +118,11 @@ describe("Coins routes", () => {
         },
       });
 
-      expect(mockedGetBinanceCoin).toHaveBeenCalledWith("BTC");
+      expect(mockedGetCoinFromApi).toHaveBeenCalledWith("BTC");
     });
 
     it("should return 502 when Binance request fails", async () => {
-      mockedGetBinanceCoin.mockRejectedValue(new Error("Binance API error"));
+      mockedGetCoinFromApi.mockRejectedValue(new Error("Binance API error"));
 
       const response = await request(app).get("/api/coins/BTC/price");
 
