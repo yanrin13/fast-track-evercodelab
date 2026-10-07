@@ -53,7 +53,10 @@ export async function syncCoins() {
     const batch = coins.slice(i, i + BATCH_SIZE);
 
     const results = await Promise.allSettled(
-      batch.map((coin: { symbol: string }) => createCoin(coin.symbol)),
+      batch.map(
+        (coin: { symbol: string; name: string; last_updated: string }) =>
+          createCoin(coin.symbol, coin.name, coin.last_updated),
+      ),
     );
 
     for (const result of results) {
