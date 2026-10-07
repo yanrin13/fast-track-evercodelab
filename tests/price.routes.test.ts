@@ -14,7 +14,7 @@ afterEach(() => {
   jest.clearAllMocks();
 });
 
-describe("GET /api/coins/:coinSymbol/price_history", () => {
+describe("GET /api/coins/:coinSymbol/price-history", () => {
   // позитивный тест, тестирует получение истории цен конкретной криптовалюты
   // ожидаемый результат: статус 200 и список исторических цен монеты
   it("should return price history", async () => {
@@ -35,7 +35,7 @@ describe("GET /api/coins/:coinSymbol/price_history", () => {
 
     mockedGetPrice.mockResolvedValue(history);
 
-    const response = await request(app).get("/api/coins/BTC/price_history");
+    const response = await request(app).get("/api/coins/BTC/price-history");
 
     expect(response.status).toBe(200);
     expect(response.body).toEqual(history);
@@ -47,7 +47,7 @@ describe("GET /api/coins/:coinSymbol/price_history", () => {
   it("should return 502 when database request fails", async () => {
     mockedGetPrice.mockRejectedValue(new Error("Database error"));
 
-    const response = await request(app).get("/api/coins/BTC/price_history");
+    const response = await request(app).get("/api/coins/BTC/price-history");
 
     expect(response.status).toBe(502);
     expect(response.body).toEqual({
