@@ -23,6 +23,8 @@ describe("Coins routes", () => {
   });
 
   describe("GET /api/coins", () => {
+    // позитивный тест, тестирует получение списка криптовалют из базы данных
+    // Ожидаемый результат: статус 200 и список монет
     it("should return list of coins", async () => {
       mockedGetAllCoins.mockResolvedValue([
         { symbol: "BTC" },
@@ -35,6 +37,8 @@ describe("Coins routes", () => {
       expect(response.body).toEqual([{ symbol: "BTC" }, { symbol: "ETH" }]);
     });
 
+    // негативный тест, тестирует обработку ошибки при получении списка криптовалют из базы данных
+    // Ожидаемый результат: статус 502 и сообщение об ошибке
     it("should return 502 when database request fails", async () => {
       mockedGetAllCoins.mockRejectedValue(new Error("Database error"));
 
@@ -48,6 +52,8 @@ describe("Coins routes", () => {
   });
 
   describe("GET /api/coins/list/price", () => {
+    // позитивный тест, тестирует получение актуальных цен всех криптовалют через API
+    // Ожидаемый результат: статус 200 и данные с ценами монет
     it("should return prices for all coins", async () => {
       mockedGetCoinsFromApi.mockResolvedValue({
         data: [
@@ -79,6 +85,8 @@ describe("Coins routes", () => {
       });
     });
 
+    // негативный тест, тестирует обработку ошибки при получении цен криптовалют из CoinMarketCap API
+    // Ожидаемый результат: статус 502 и сообщение об ошибке
     it("should return 502 when Binance request fails", async () => {
       mockedGetCoinsFromApi.mockRejectedValue(new Error("Binance API error"));
 
@@ -92,6 +100,8 @@ describe("Coins routes", () => {
   });
 
   describe("GET /api/coins/:symbol/price", () => {
+    // позитивный тест, тестирует получение актуальной цены конкретной криптовалюты
+    // Ожидаемый результат: статус 200 и данные с ценой указанной монеты
     it("should return price for a specific coin", async () => {
       mockedGetCoinFromApi.mockResolvedValue({
         data: {
@@ -121,6 +131,8 @@ describe("Coins routes", () => {
       expect(mockedGetCoinFromApi).toHaveBeenCalledWith("BTC");
     });
 
+    // негативный тест, тестирует обработку ошибки при получении цены конкретной криптовалюты из CoinMarketCap API
+    // Ожидаемый результат: статус 502 и сообщение об ошибке
     it("should return 502 when Binance request fails", async () => {
       mockedGetCoinFromApi.mockRejectedValue(new Error("Binance API error"));
 

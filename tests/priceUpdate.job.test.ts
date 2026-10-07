@@ -29,6 +29,8 @@ describe("priceUpdate job", () => {
     jest.useRealTimers();
   });
 
+  // позитивный тест, тестирует немедленный запуск обновления цен и повторный запуск каждые 20 секунд
+  // ожидаемый результат: updatePrices вызывается сразу и повторно через 20 секунд
   it("should update prices immediately and every 20 seconds", async () => {
     mockedUpdatePrices.mockResolvedValue(undefined);
 
@@ -41,6 +43,8 @@ describe("priceUpdate job", () => {
     expect(mockedUpdatePrices).toHaveBeenCalledTimes(2);
   });
 
+  // негативный тест, тестирует обработку ошибки обновления цен внутри фонового интервала
+  // ожидаемый результат: ошибка обрабатывается и фоновая задача продолжает выполняться
   it("should handle updatePrices error inside interval", async () => {
     mockedUpdatePrices
       .mockResolvedValueOnce(undefined)
@@ -55,6 +59,8 @@ describe("priceUpdate job", () => {
     expect(mockedUpdatePrices).toHaveBeenCalledTimes(2);
   });
 
+  // позитивный тест, тестирует остановку фоновой задачи обновления цен
+  // ожидаемый результат: после остановки updatePrices больше не вызывается
   it("should stop the interval", async () => {
     mockedUpdatePrices.mockResolvedValue(undefined);
 

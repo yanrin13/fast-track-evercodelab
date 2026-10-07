@@ -15,6 +15,8 @@ afterEach(() => {
 });
 
 describe("GET /api/coins/:coinSymbol/price_history", () => {
+  // позитивный тест, тестирует получение истории цен конкретной криптовалюты
+  // ожидаемый результат: статус 200 и список исторических цен монеты
   it("should return price history", async () => {
     const history = [
       {
@@ -40,6 +42,8 @@ describe("GET /api/coins/:coinSymbol/price_history", () => {
     expect(mockedGetPrice).toHaveBeenCalledWith("BTC");
   });
 
+  // негативный тест, тестирует обработку ошибки при получении истории цен из базы данных
+  // ожидаемый результат: статус 502 и сообщение об ошибке
   it("should return 502 when database request fails", async () => {
     mockedGetPrice.mockRejectedValue(new Error("Database error"));
 

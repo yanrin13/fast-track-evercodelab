@@ -28,6 +28,8 @@ describe("coinSync job", () => {
     jest.useRealTimers();
   });
 
+  // позитивный тест, тестирует немедленный запуск синхронизации и повторный запуск через час
+  // ожидаемый результат: syncCoins вызывается сразу и повторно через один час
   it("should sync coins immediately and every hour", async () => {
     mockedSyncCoins.mockResolvedValue(undefined);
 
@@ -40,6 +42,8 @@ describe("coinSync job", () => {
     expect(mockedSyncCoins).toHaveBeenCalledTimes(2);
   });
 
+  // негативный тест, тестирует обработку ошибки при первоначальной синхронизации
+  // ожидаемый результат: ошибка обрабатывается и повторный запуск startCoinSync работает
   it("should continue working when syncCoins fails", async () => {
     mockedSyncCoins
       .mockRejectedValueOnce(new Error("Sync failed"))
@@ -47,7 +51,6 @@ describe("coinSync job", () => {
 
     await startCoinSync();
 
-    // Первая ошибка ловится внутри startCoinSync
     expect(mockedSyncCoins).toHaveBeenCalledTimes(1);
 
     await startCoinSync();
@@ -55,6 +58,8 @@ describe("coinSync job", () => {
     expect(mockedSyncCoins).toHaveBeenCalledTimes(2);
   });
 
+  // негативный тест, тестирует обработку ошибки синхронизации внутри фонового интервала
+  // ожидаемый результат: ошибка обрабатывается и выполнение фоновой задачи не прекращается
   it("should handle sync error inside interval", async () => {
     mockedSyncCoins
       .mockResolvedValueOnce(undefined)

@@ -1,7 +1,6 @@
 import { jest, describe, it, expect, afterEach } from "@jest/globals";
 import request from "supertest";
 
-// Мокаем auth
 jest.unstable_mockModule("../src/middleware/auth.js", () => ({
   auth: jest.fn((_req: any, res: any, next: any) => {
     res.locals.userId = 1;
@@ -9,7 +8,6 @@ jest.unstable_mockModule("../src/middleware/auth.js", () => ({
   }),
 }));
 
-// Мокаем сервис
 jest.unstable_mockModule("../src/services/trackedCoins.service.js", () => ({
   getTrackedList: jest.fn(),
   addCoin: jest.fn(),
@@ -32,6 +30,8 @@ afterEach(() => {
 });
 
 describe("GET /api/trackedCoins", () => {
+  // позитивный тест, тестирует получение списка отслеживаемых криптовалют
+  // ожидаемый результат: статус 200 и список отслеживаемых монет
   it("should return tracked coins", async () => {
     const coins = [
       {
@@ -58,6 +58,8 @@ describe("GET /api/trackedCoins", () => {
     expect(mockedGetTrackedList).toHaveBeenCalledWith(1);
   });
 
+  // негативный тест, тестирует обработку ошибки при получении списка отслеживаемых криптовалют
+  // ожидаемый результат: статус 500 и сообщение об ошибке
   it("should return 500 when getting tracked coins fails", async () => {
     mockedGetTrackedList.mockRejectedValue(new Error("Database error"));
 
@@ -71,6 +73,8 @@ describe("GET /api/trackedCoins", () => {
 });
 
 describe("POST /api/trackedCoins", () => {
+  // позитивный тест, тестирует добавление криптовалюты в список отслеживаемых
+  // ожидаемый результат: статус 201 и успешное добавление монеты
   it("should add a tracked coin", async () => {
     mockedAddCoin.mockResolvedValue(undefined);
 
@@ -86,6 +90,8 @@ describe("POST /api/trackedCoins", () => {
     expect(mockedAddCoin).toHaveBeenCalledWith(1, "BTC");
   });
 
+  // негативный тест, тестирует обработку ошибки при добавлении криптовалюты
+  // ожидаемый результат: статус 500 и сообщение об ошибке
   it("should return 500 when adding coin fails", async () => {
     mockedAddCoin.mockRejectedValue(new Error("Database error"));
 
@@ -101,6 +107,8 @@ describe("POST /api/trackedCoins", () => {
 });
 
 describe("PUT /api/trackedCoins/:coinSymbol", () => {
+  // позитивный тест, тестирует изменение отслеживаемой криптовалюты
+  // ожидаемый результат: статус 200 и успешное обновление монеты
   it("should update a tracked coin", async () => {
     mockedUpdateCoin.mockResolvedValue(undefined);
 
@@ -116,6 +124,8 @@ describe("PUT /api/trackedCoins/:coinSymbol", () => {
     expect(mockedUpdateCoin).toHaveBeenCalledWith(1, "BTC", "ETH");
   });
 
+  // негативный тест, тестирует обработку ошибки при изменении отслеживаемой криптовалюты
+  // ожидаемый результат: статус 500 и сообщение об ошибке
   it("should return 500 when updating coin fails", async () => {
     mockedUpdateCoin.mockRejectedValue(new Error("Database error"));
 
@@ -131,6 +141,8 @@ describe("PUT /api/trackedCoins/:coinSymbol", () => {
 });
 
 describe("DELETE /api/trackedCoins/:coinSymbol", () => {
+  // позитивный тест, тестирует удаление криптовалюты из списка отслеживаемых
+  // ожидаемый результат: статус 200 и успешное удаление монеты
   it("should delete a tracked coin", async () => {
     mockedDeleteCoin.mockResolvedValue(undefined);
 
@@ -144,6 +156,8 @@ describe("DELETE /api/trackedCoins/:coinSymbol", () => {
     expect(mockedDeleteCoin).toHaveBeenCalledWith(1, "BTC");
   });
 
+  // негативный тест, тестирует обработку ошибки при удалении отслеживаемой криптовалюты
+  // ожидаемый результат: статус 500 и сообщение об ошибке
   it("should return 500 when deleting coin fails", async () => {
     mockedDeleteCoin.mockRejectedValue(new Error("Database error"));
 
