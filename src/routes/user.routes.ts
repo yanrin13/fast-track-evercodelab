@@ -53,6 +53,5 @@ const router = Router();
  *               error: Failed to get API key
  */
 router.get("/user/api-key", getFirstUserApiKey);
-router.get("/user/api-key", getFirstUserApiKey);
 
 export default router;
