@@ -10,13 +10,13 @@ export async function getCoinPrice(req: Request, res: Response) {
   try {
     const symbol = req.params.symbol;
 
-    if (typeof symbol !== "string") {
+    if (!symbol || typeof symbol !== "string" || !/^[A-Za-z]+$/.test(symbol)) {
       return res.status(400).json({
-        error: "Symbol is required and must be a string",
+        error: "Invalid cryptocurrency symbol",
       });
     }
 
-    const data = await getBinanceCoin(symbol);
+    const data = await getBinanceCoin(symbol.toUpperCase());
 
     res.json(data);
   } catch (error) {

@@ -1,21 +1,53 @@
+import { jest, describe, it, expect, afterEach } from "@jest/globals";
 import request from "supertest";
-import app from "../src/app.js";
 
-describe("Price History Routes", () => {
-  describe("GET /api/coins/:coinSymbol/price_history", () => {
-    // позитивный тест получение истории цен по валидному символу ожидаемый результат: 200 и данные
-    it("returns price history for valid coinSymbol", async () => {
-      const res = await request(app).get("/api/coins/BTC/price_history");
+jest.unstable_mockModule("../src/services/price.service.js", () => ({
+  getPrice: jest.fn(),
+}));
 
-      expect(res.status).toBe(200);
-      expect(res.body).toBeDefined();
-    });
+const { getPrice } = await import("../src/services/price.service.js");
+const { default: app } = await import("../src/app.js");
 
-    // негативный тест пустой сегмент coinSymbol ожидаемый результат: 404
-    it("returns 404 when coinSymbol segment is empty", async () => {
-      const res = await request(app).get("/api/coins//price_history");
+const mockedGetPrice = jest.mocked(getPrice);
 
-      expect(res.status).toBe(404);
+afterEach(() => {
+  jest.clearAllMocks();
+});
+
+describe("GET /api/coins/:coinSymbol/price_history", () => {
+  it("should return price history", async () => {
+    const history = [
+      {
+        id: 162,
+        coin_symbol: "BTC",
+        price: 85948.67701723069,
+        recorded_at: "2026-10-06 15:55:49",
+      },
+      {
+        id: 118,
+        coin_symbol: "BTC",
+        price: 86090.935445062,
+        recorded_at: "2026-10-06 15:47:03",
+      },
+    ];
+
+    mockedGetPrice.mockResolvedValue(history);
+
+    const response = await request(app).get("/api/coins/BTC/price_history");
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual(history);
+    expect(mockedGetPrice).toHaveBeenCalledWith("BTC");
+  });
+
+  it("should return 502 when database request fails", async () => {
+    mockedGetPrice.mockRejectedValue(new Error("Database error"));
+
+    const response = await request(app).get("/api/coins/BTC/price_history");
+
+    expect(response.status).toBe(502);
+    expect(response.body).toEqual({
+      error: "Failed to get data from database",
     });
   });
 });

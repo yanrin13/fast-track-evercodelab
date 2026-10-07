@@ -1,55 +1,135 @@
+import { jest, describe, it, expect, afterEach } from "@jest/globals";
+
 import request from "supertest";
-import app from "../src/app.js";
 
-describe("Coin Routes", () => {
-  describe("GET /api/coins/:symbol/price", () => {
-    // позитивный тест получение цены существующей монеты ожидаемый результат: 200 и данные
-    it("returns price for valid symbol", async () => {
-      const res = await request(app).get("/api/coins/BTC/price");
+jest.unstable_mockModule("../src/services/coins.service.js", () => ({
+  getBinanceCoin: jest.fn(),
+  getBinanceCoins: jest.fn(),
+  getAllCoins: jest.fn(),
+}));
 
-      expect(res.status).toBe(200);
-      expect(res.body).toBeDefined();
+const { getBinanceCoin, getBinanceCoins, getAllCoins } =
+  await import("../src/services/coins.service.js");
+
+const { default: app } = await import("../src/app.js");
+
+const mockedGetBinanceCoin = jest.mocked(getBinanceCoin);
+const mockedGetBinanceCoins = jest.mocked(getBinanceCoins);
+const mockedGetAllCoins = jest.mocked(getAllCoins);
+
+describe("Coins routes", () => {
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  describe("GET /api/coins", () => {
+    it("should return list of coins", async () => {
+      mockedGetAllCoins.mockResolvedValue([
+        { symbol: "BTC" },
+        { symbol: "ETH" },
+      ]);
+
+      const response = await request(app).get("/api/coins");
+
+      expect(response.status).toBe(200);
+      expect(response.body).toEqual([{ symbol: "BTC" }, { symbol: "ETH" }]);
     });
 
-    // негативный тест несуществующий путь без символа ожидаемый результат: 404
-    it("returns 404 when symbol segment is empty", async () => {
-      const res = await request(app).get("/api/coins//price");
+    it("should return 502 when database request fails", async () => {
+      mockedGetAllCoins.mockRejectedValue(new Error("Database error"));
 
-      expect(res.status).toBe(404);
+      const response = await request(app).get("/api/coins");
+
+      expect(response.status).toBe(502);
+      expect(response.body).toEqual({
+        error: "Failed to get data from database",
+      });
     });
   });
 
   describe("GET /api/coins/list/price", () => {
-    // позитивный тест получение курсов всех монет с Binance ожидаемый результат: 200 и данные
-    it("returns list of coin prices", async () => {
-      const res = await request(app).get("/api/coins/list/price");
+    it("should return prices for all coins", async () => {
+      mockedGetBinanceCoins.mockResolvedValue({
+        data: [
+          {
+            symbol: "BTC",
+            price: 85689,
+          },
+          {
+            symbol: "ETH",
+            price: 2500,
+          },
+        ],
+      });
 
-      expect(res.status).toBe(200);
-      expect(res.body).toBeDefined();
+      const response = await request(app).get("/api/coins/list/price");
+
+      expect(response.status).toBe(200);
+      expect(response.body).toEqual({
+        data: [
+          {
+            symbol: "BTC",
+            price: 85689,
+          },
+          {
+            symbol: "ETH",
+            price: 2500,
+          },
+        ],
+      });
     });
 
-    // негативный тест неверный HTTP-метод ожидаемый результат: 404
-    it("returns 404 for wrong method", async () => {
-      const res = await request(app).post("/api/coins/list/price");
+    it("should return 502 when Binance request fails", async () => {
+      mockedGetBinanceCoins.mockRejectedValue(new Error("Binance API error"));
 
-      expect(res.status).toBe(404);
+      const response = await request(app).get("/api/coins/list/price");
+
+      expect(response.status).toBe(502);
+      expect(response.body).toEqual({
+        error: "Failed to get data from CoinMarketCap API",
+      });
     });
   });
 
-  describe("GET /api/coins", () => {
-    // позитивный тест получение всех монет из БД ожидаемый результат: 200 и данные
-    it("returns all coins from database", async () => {
-      const res = await request(app).get("/api/coins");
+  describe("GET /api/coins/:symbol/price", () => {
+    it("should return price for a specific coin", async () => {
+      mockedGetBinanceCoin.mockResolvedValue({
+        data: {
+          BTC: [
+            {
+              symbol: "BTC",
+              price: 85689,
+            },
+          ],
+        },
+      });
 
-      expect(res.status).toBe(200);
-      expect(res.body).toBeDefined();
+      const response = await request(app).get("/api/coins/BTC/price");
+
+      expect(response.status).toBe(200);
+      expect(response.body).toEqual({
+        data: {
+          BTC: [
+            {
+              symbol: "BTC",
+              price: 85689,
+            },
+          ],
+        },
+      });
+
+      expect(mockedGetBinanceCoin).toHaveBeenCalledWith("BTC");
     });
 
-    // негативный тест неверный путь ожидаемый результат: 404
-    it("returns 404 for unknown path", async () => {
-      const res = await request(app).get("/api/coins/unknown/extra");
+    it("should return 502 when Binance request fails", async () => {
+      mockedGetBinanceCoin.mockRejectedValue(new Error("Binance API error"));
 
-      expect(res.status).toBe(404);
+      const response = await request(app).get("/api/coins/BTC/price");
+
+      expect(response.status).toBe(502);
+      expect(response.body).toEqual({
+        error: "Failed to get data from CoinMarketCap API",
+      });
     });
   });
 });

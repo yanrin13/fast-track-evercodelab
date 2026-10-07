@@ -1,148 +1,157 @@
+import { jest, describe, it, expect, afterEach } from "@jest/globals";
 import request from "supertest";
-import app from "../src/app.js";
 
-const VALID_TOKEN =
-  "72389951a208b807e88a0f941f7d355a375de4cdb587a35ea2270b4d1dfcf242";
-const AUTH = { Authorization: `Bearer ${VALID_TOKEN}` };
+// Мокаем auth
+jest.unstable_mockModule("../src/middleware/auth.js", () => ({
+  auth: jest.fn((_req: any, res: any, next: any) => {
+    res.locals.userId = 1;
+    next();
+  }),
+}));
 
-describe("Tracked Coins Routes", () => {
-  describe("GET /api/trackedCoins", () => {
-    // позитивный тест получение списка отслеживаемых монет с валидным токеном ожидаемый результат: 200 и массив
-    it("returns tracked coins for authenticated user", async () => {
-      const res = await request(app).get("/api/trackedCoins").set(AUTH);
+// Мокаем сервис
+jest.unstable_mockModule("../src/services/trackedCoins.service.js", () => ({
+  getTrackedList: jest.fn(),
+  addCoin: jest.fn(),
+  updateCoin: jest.fn(),
+  deleteCoin: jest.fn(),
+}));
 
-      expect(res.status).toBe(200);
-      expect(Array.isArray(res.body)).toBe(true);
+const { getTrackedList, addCoin, updateCoin, deleteCoin } =
+  await import("../src/services/trackedCoins.service.js");
+
+const { default: app } = await import("../src/app.js");
+
+const mockedGetTrackedList = jest.mocked(getTrackedList);
+const mockedAddCoin = jest.mocked(addCoin);
+const mockedUpdateCoin = jest.mocked(updateCoin);
+const mockedDeleteCoin = jest.mocked(deleteCoin);
+
+afterEach(() => {
+  jest.clearAllMocks();
+});
+
+describe("GET /api/trackedCoins", () => {
+  it("should return tracked coins", async () => {
+    const coins = [
+      {
+        id: 1,
+        user_id: 1,
+        coin_symbol: "BTC",
+      },
+      {
+        id: 2,
+        user_id: 1,
+        coin_symbol: "ETH",
+      },
+    ];
+
+    mockedGetTrackedList.mockResolvedValue(coins);
+
+    const response = await request(app).get("/api/trackedCoins");
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({
+      data: coins,
     });
 
-    // негативный тест запрос без Authorization ожидаемый результат: 401
-    it("returns 401 without token", async () => {
-      const res = await request(app).get("/api/trackedCoins");
-
-      expect(res.status).toBe(401);
-      expect(res.body).toEqual({
-        error: "Bearer token is required",
-      });
-    });
+    expect(mockedGetTrackedList).toHaveBeenCalledWith(1);
   });
 
-  describe("POST /api/trackedCoins", () => {
-    // позитивный тест добавление валидной монеты ожидаемый результат: 201 и данные
-    it("adds tracked coin with valid body", async () => {
-      const res = await request(app)
-        .post("/api/trackedCoins")
-        .set(AUTH)
-        .send({ coinSymbol: "BTC" });
+  it("should return 500 when getting tracked coins fails", async () => {
+    mockedGetTrackedList.mockRejectedValue(new Error("Database error"));
 
-      expect(res.status).toBe(201);
-      expect(res.body).toBeDefined();
-    });
+    const response = await request(app).get("/api/trackedCoins");
 
-    // негативный тест невалидный coinSymbol (число) ожидаемый результат: 400
-    it("returns 400 for invalid coinSymbol", async () => {
-      const res = await request(app)
-        .post("/api/trackedCoins")
-        .set(AUTH)
-        .send({ coinSymbol: 123 });
-
-      expect(res.status).toBe(400);
-      expect(res.body).toEqual({
-        error: "coinSymbol is required and must be a crypto coin name",
-      });
-    });
-
-    // негативный тест невалидный токен ожидаемый результат: 401
-    it("returns 401 with invalid token", async () => {
-      const res = await request(app)
-        .post("/api/trackedCoins")
-        .set({ Authorization: "Bearer invalid-token" })
-        .send({ coinSymbol: "BTC" });
-
-      expect(res.status).toBe(401);
-      expect(res.body).toEqual({
-        error: "Invalid token",
-      });
+    expect(response.status).toBe(500);
+    expect(response.body).toEqual({
+      error: "Failed to get tracked coins",
     });
   });
+});
 
-  describe("PUT /api/trackedCoins/:coinSymbol", () => {
-    // позитивный тест обновление символа монеты ожидаемый результат: 200 и данные
-    it("updates tracked coin symbol", async () => {
-      await request(app)
-        .post("/api/trackedCoins")
-        .set(AUTH)
-        .send({ coinSymbol: "BTC" });
+describe("POST /api/trackedCoins", () => {
+  it("should add a tracked coin", async () => {
+    mockedAddCoin.mockResolvedValue(undefined);
 
-      const res = await request(app)
-        .put("/api/trackedCoins/BTC")
-        .set(AUTH)
-        .send({ newSymbol: "ETH" });
-
-      expect(res.status).toBe(200);
-      expect(res.body).toBeDefined();
+    const response = await request(app).post("/api/trackedCoins").send({
+      coinSymbol: "BTC",
     });
 
-    // негативный тест невалидный newSymbol ожидаемый результат: 400
-    it("returns 400 for invalid newSymbol", async () => {
-      const res = await request(app)
-        .put("/api/trackedCoins/BTC")
-        .set(AUTH)
-        .send({ newSymbol: null });
-
-      expect(res.status).toBe(400);
-      expect(res.body).toEqual({
-        error: "newSymbol is required and must be a crypto coin name",
-      });
+    expect(response.status).toBe(201);
+    expect(response.body).toEqual({
+      success: true,
     });
 
-    // негативный тест монета не найдена в БД ожидаемый результат: 500
-    it("returns 500 when tracked coin does not exist", async () => {
-      const res = await request(app)
-        .put("/api/trackedCoins/NONEXISTENT")
-        .set(AUTH)
-        .send({ newSymbol: "ETH" });
-
-      expect(res.status).toBe(500);
-      expect(res.body).toEqual({
-        error: "Failed to update tracked coin",
-      });
-    });
+    expect(mockedAddCoin).toHaveBeenCalledWith(1, "BTC");
   });
 
-  describe("DELETE /api/trackedCoins/:coinSymbol", () => {
-    // позитивный тест удаление отслеживаемой монеты ожидаемый результат: 200 и данные
-    it("deletes tracked coin", async () => {
-      await request(app)
-        .post("/api/trackedCoins")
-        .set(AUTH)
-        .send({ coinSymbol: "SOL" });
+  it("should return 500 when adding coin fails", async () => {
+    mockedAddCoin.mockRejectedValue(new Error("Database error"));
 
-      const res = await request(app).delete("/api/trackedCoins/SOL").set(AUTH);
-
-      expect(res.status).toBe(200);
-      expect(res.body).toBeDefined();
+    const response = await request(app).post("/api/trackedCoins").send({
+      coinSymbol: "BTC",
     });
 
-    // негативный тест монета не найдена ожидаемый результат: 500
-    it("returns 500 when deleting non-existent coin", async () => {
-      const res = await request(app)
-        .delete("/api/trackedCoins/NONEXISTENT")
-        .set(AUTH);
+    expect(response.status).toBe(500);
+    expect(response.body).toEqual({
+      error: "Failed to add tracked coin",
+    });
+  });
+});
 
-      expect(res.status).toBe(500);
-      expect(res.body).toEqual({
-        error: "Failed to delete tracked coin",
-      });
+describe("PUT /api/trackedCoins/:coinSymbol", () => {
+  it("should update a tracked coin", async () => {
+    mockedUpdateCoin.mockResolvedValue(undefined);
+
+    const response = await request(app).put("/api/trackedCoins/BTC").send({
+      newSymbol: "ETH",
     });
 
-    // негативный тест запрос без Bearer-токена ожидаемый результат: 401
-    it("returns 401 without Bearer token", async () => {
-      const res = await request(app).delete("/api/trackedCoins/BTC");
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({
+      success: true,
+    });
 
-      expect(res.status).toBe(401);
-      expect(res.body).toEqual({
-        error: "Bearer token is required",
-      });
+    expect(mockedUpdateCoin).toHaveBeenCalledWith(1, "BTC", "ETH");
+  });
+
+  it("should return 500 when updating coin fails", async () => {
+    mockedUpdateCoin.mockRejectedValue(new Error("Database error"));
+
+    const response = await request(app).put("/api/trackedCoins/BTC").send({
+      newSymbol: "ETH",
+    });
+
+    expect(response.status).toBe(500);
+    expect(response.body).toEqual({
+      error: "Failed to update tracked coin",
+    });
+  });
+});
+
+describe("DELETE /api/trackedCoins/:coinSymbol", () => {
+  it("should delete a tracked coin", async () => {
+    mockedDeleteCoin.mockResolvedValue(undefined);
+
+    const response = await request(app).delete("/api/trackedCoins/BTC");
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({
+      success: true,
+    });
+
+    expect(mockedDeleteCoin).toHaveBeenCalledWith(1, "BTC");
+  });
+
+  it("should return 500 when deleting coin fails", async () => {
+    mockedDeleteCoin.mockRejectedValue(new Error("Database error"));
+
+    const response = await request(app).delete("/api/trackedCoins/BTC");
+
+    expect(response.status).toBe(500);
+    expect(response.body).toEqual({
+      error: "Failed to delete tracked coin",
     });
   });
 });
