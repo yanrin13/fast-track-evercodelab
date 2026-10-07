@@ -14,7 +14,9 @@
     "isolatedModules": true,
     "noUncheckedSideEffectImports": true,
     "moduleDetection": "force",
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "rootDir": "./src",
+    "outDir": "./dist"
   },
-  "include": ["src/**/*", "tests/**/*", "tests", "tests"]
+  "include": ["src/**/*"]
 }
