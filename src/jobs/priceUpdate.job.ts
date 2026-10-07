@@ -1,3 +1,4 @@
+import { DEFAULT_REQUEST_DELAY } from "../config.js";
 import { updatePrices } from "../services/price.service.js";
 
 let interval: NodeJS.Timeout;
@@ -11,7 +12,7 @@ export async function startPriceUpdateJob() {
     } catch (error) {
       console.error("Price update failed:", error);
     }
-  }, 20_000);
+  }, DEFAULT_REQUEST_DELAY);
 }
 
 export function stopPriceUpdateJob() {

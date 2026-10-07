@@ -6,6 +6,7 @@ import {
   beforeEach,
   afterEach,
 } from "@jest/globals";
+import { DEFAULT_REQUEST_DELAY } from "../src/config.js";
 
 jest.unstable_mockModule("../src/services/price.service.js", () => ({
   updatePrices: jest.fn(),
@@ -38,7 +39,7 @@ describe("priceUpdate job", () => {
 
     expect(mockedUpdatePrices).toHaveBeenCalledTimes(1);
 
-    await jest.advanceTimersByTimeAsync(20_000);
+    await jest.advanceTimersByTimeAsync(DEFAULT_REQUEST_DELAY);
 
     expect(mockedUpdatePrices).toHaveBeenCalledTimes(2);
   });
@@ -54,7 +55,7 @@ describe("priceUpdate job", () => {
 
     expect(mockedUpdatePrices).toHaveBeenCalledTimes(1);
 
-    await jest.advanceTimersByTimeAsync(20_000);
+    await jest.advanceTimersByTimeAsync(DEFAULT_REQUEST_DELAY);
 
     expect(mockedUpdatePrices).toHaveBeenCalledTimes(2);
   });
@@ -70,7 +71,7 @@ describe("priceUpdate job", () => {
 
     stopPriceUpdateJob();
 
-    await jest.advanceTimersByTimeAsync(20_000);
+    await jest.advanceTimersByTimeAsync(DEFAULT_REQUEST_DELAY);
 
     expect(mockedUpdatePrices).toHaveBeenCalledTimes(1);
   });

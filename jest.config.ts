@@ -25,17 +25,9 @@ const config: Config = {
   },
   testMatch: ["**/tests/**/*.test.ts"],
 
-  // важно
   clearMocks: true,
   restoreMocks: true,
   resetModules: true,
-
-  // чтобы не было "worker process failed to exit"
-  // (после того как уберёшь setInterval в тестах — можно убрать forceExit)
-  // forceExit: true,
-
-  // для отладки утечек:
-  // detectOpenHandles: true,
 };
 
 export default config;

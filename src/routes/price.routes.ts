@@ -93,6 +93,6 @@ const router = Router();
  *             example:
  *               error: Failed to get data from database
  */
-router.get("/coins/:coinSymbol/price_history", getCoinHistory);
+router.get("/coins/:coinSymbol/price-history", getCoinHistory);
 
 export default router;
