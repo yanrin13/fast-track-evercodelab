@@ -1,12 +1,14 @@
 import sqlite3 from "sqlite3";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
+import path from "path";
+import fs from "fs";
+import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-export const db = new sqlite3.Database(
-  path.join(__dirname, "../../data/db.sqlite"),
-);
+const dataDir = path.join(__dirname, "../../data");
+const dbPath = path.join(dataDir, "db.sqlite");
 
-export default db;
+fs.mkdirSync(dataDir, { recursive: true });
+
+export const db = new sqlite3.Database(dbPath);
